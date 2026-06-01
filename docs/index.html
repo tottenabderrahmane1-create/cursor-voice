@@ -10,6 +10,25 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<!-- ── Analytics: Google Analytics 4 with Consent Mode v2 ───────────────
+     Replace G-XXXXXXXXXX below with your GA4 Measurement ID
+     (Admin → Data Streams → your web stream → Measurement ID).
+     Until you do, no tracking script loads — the consent banner and
+     custom events still run, they just log to the console.            -->
+<script>
+  window.CV_GA_ID = 'G-XXXXXXXXXX'; // ← your GA4 Measurement ID
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+  // Consent Mode v2 — everything denied until the user accepts.
+  gtag('consent', 'default', {
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+    analytics_storage: 'denied',
+    wait_for_update: 500
+  });
+</script>
 <style>
   :root {
     --violet: #8c4cf2;
@@ -409,6 +428,34 @@
   }
 
   :focus-visible { outline: 2px solid var(--sky); outline-offset: 3px; border-radius: 4px; }
+
+  /* ── consent banner ────────────────────────────────────────────── */
+  .consent {
+    position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 1000;
+    max-width: 520px; margin: 0 auto;
+    padding: 18px 20px; border-radius: 16px;
+    background: rgba(12,12,20,.92); backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    border: 1px solid var(--border-2);
+    box-shadow: 0 20px 60px rgba(0,0,0,.6);
+    transform: translateY(140%); opacity: 0;
+    transition: transform .5s var(--ease), opacity .4s;
+  }
+  .consent.show { transform: none; opacity: 1; }
+  .consent p { font-size: 13.5px; color: var(--fg-dim); font-weight: 350; margin-bottom: 14px; }
+  .consent p a { color: var(--sky); text-decoration: none; }
+  .consent p a:hover { text-decoration: underline; }
+  .consent .row { display: flex; gap: 10px; }
+  .consent button {
+    flex: 1; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 550;
+    padding: 10px 16px; border-radius: 10px; transition: all .2s var(--ease);
+  }
+  .consent .accept { color: #0a0a0f; border: none;
+    background: linear-gradient(110deg, var(--violet), var(--sky)); }
+  .consent .accept:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(140,76,242,.4); }
+  .consent .decline { color: var(--fg-dim); background: var(--surface-2); border: 1px solid var(--border-2); }
+  .consent .decline:hover { color: var(--fg); border-color: rgba(255,255,255,.28); }
+  @media (prefers-reduced-motion: reduce){ .consent { transition: opacity .3s; transform: none; } }
 </style>
 </head>
 <body>
@@ -690,9 +737,17 @@
         <a href="https://github.com/tottenabderrahmane1-create/cursor-voice/blob/main/README.md" target="_blank" rel="noopener">Docs</a>
       </div>
     </div>
-    <p class="foot-note">Open source under the MIT license · not affiliated with or endorsed by OpenAI or Apple · built by <a href="https://github.com/tottenabderrahmane1-create" target="_blank" rel="noopener">@tottenabderrahmane1-create</a></p>
+    <p class="foot-note">Open source under the MIT license · not affiliated with or endorsed by OpenAI or Apple · built by <a href="https://github.com/tottenabderrahmane1-create" target="_blank" rel="noopener">@tottenabderrahmane1-create</a> · <a href="#" id="cookie-settings">cookie settings</a></p>
   </div>
 </footer>
+
+<div class="consent" id="consent" role="dialog" aria-live="polite" aria-label="Cookie consent">
+  <p>This site uses cookies and Google Analytics to understand how people use it — which sections get read, what gets clicked, where folks drop off. Nothing personal is sold or shared. You can decline and the page works exactly the same.</p>
+  <div class="row">
+    <button class="decline" id="consent-decline">Decline</button>
+    <button class="accept" id="consent-accept">Allow analytics</button>
+  </div>
+</div>
 
 <script>
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -851,8 +906,127 @@
         const old = btn.textContent; btn.textContent = 'copied'; btn.classList.add('ok');
         setTimeout(() => { btn.textContent = old; btn.classList.remove('ok'); }, 1600);
       } catch (e) { btn.textContent = 'press ⌘C'; }
+      track('copy_command', { command: btn.dataset.copy.split(' ')[0] });
     });
   });
+
+  /* ──────────────────────────────────────────────────────────────────
+     Analytics & engagement tracking
+     - GA4 via Consent Mode v2; loads only after the user accepts.
+     - Consent choice stored in a first-party cookie + localStorage.
+     - Custom events fire into dataLayer regardless (console-logged
+       until GA is configured), and reach GA once consent + ID are set.
+  ────────────────────────────────────────────────────────────────── */
+  const GA_ID = window.CV_GA_ID;
+  const GA_READY = GA_ID && !/X{6,}/.test(GA_ID);
+  const CONSENT_KEY = 'cv_consent';
+  const COOKIE_DAYS = 180;
+
+  function setCookie(name, val, days){
+    const d = new Date(); d.setTime(d.getTime() + days*864e5);
+    document.cookie = `${name}=${val};expires=${d.toUTCString()};path=/;SameSite=Lax`;
+  }
+  function getCookie(name){
+    return document.cookie.split('; ').find(r => r.startsWith(name+'='))?.split('=')[1] || null;
+  }
+  function getConsent(){ return localStorage.getItem(CONSENT_KEY) || getCookie(CONSENT_KEY); }
+  function saveConsent(v){ localStorage.setItem(CONSENT_KEY, v); setCookie(CONSENT_KEY, v, COOKIE_DAYS); }
+
+  // central event dispatcher
+  function track(name, params={}) {
+    const payload = { event: name, ...params };
+    window.dataLayer.push(payload);
+    if (!GA_READY || getConsent() !== 'granted') {
+      // visible while you're wiring it up; harmless in production
+      console.debug('[analytics]', name, params);
+    }
+  }
+
+  // load GA4 once, after consent granted
+  let gaLoaded = false;
+  function loadGA() {
+    if (gaLoaded || !GA_READY) return;
+    gaLoaded = true;
+    const s = document.createElement('script');
+    s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
+    document.head.appendChild(s);
+    gtag('js', new Date());
+    gtag('config', GA_ID, { anonymize_ip: true });
+  }
+
+  function grant() {
+    gtag('consent', 'update', {
+      ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied',
+      analytics_storage: 'granted'
+    });
+    saveConsent('granted'); loadGA();
+  }
+  function deny() {
+    gtag('consent', 'update', { analytics_storage: 'denied' });
+    saveConsent('denied');
+  }
+
+  // consent banner wiring
+  const banner = document.getElementById('consent');
+  function showBanner(){ banner.classList.add('show'); }
+  function hideBanner(){ banner.classList.remove('show'); }
+
+  const prior = getConsent();
+  if (prior === 'granted') { grant(); }
+  else if (prior !== 'denied') { setTimeout(showBanner, 1200); }  // first visit
+
+  document.getElementById('consent-accept').addEventListener('click', () => {
+    grant(); hideBanner(); track('consent_granted');
+  });
+  document.getElementById('consent-decline').addEventListener('click', () => {
+    deny(); hideBanner(); track('consent_declined');
+  });
+  document.getElementById('cookie-settings').addEventListener('click', (e) => {
+    e.preventDefault(); showBanner();
+  });
+
+  // ── engagement events ──────────────────────────────────────────────
+
+  // page view
+  track('page_view', { page: location.pathname, ref: document.referrer || 'direct' });
+
+  // CTA + outbound clicks
+  document.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
+      const href = a.getAttribute('href') || '';
+      if (a.classList.contains('btn-primary')) track('cta_click', { cta: 'install' });
+      else if (href.includes('github.com')) track('outbound_click', { url: href });
+    });
+  });
+
+  // scroll depth milestones
+  const depths = [25, 50, 75, 100]; const hit = new Set();
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = h > 0 ? (window.scrollY / h) * 100 : 0;
+    depths.forEach(d => { if (pct >= d && !hit.has(d)) { hit.add(d); track('scroll_depth', { percent: d }); } });
+  }, { passive: true });
+
+  // section impressions
+  const seenSections = new Set();
+  const secObs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting && e.target.id && !seenSections.has(e.target.id)) {
+        seenSections.add(e.target.id);
+        track('section_view', { section: e.target.id });
+      }
+    });
+  }, { threshold: 0.4 });
+  document.querySelectorAll('section[id]').forEach(s => secObs.observe(s));
+
+  // time-engaged milestones (only counts active tab)
+  let engaged = 0, lastTick = Date.now();
+  const marks = [15, 30, 60, 120, 300]; const markHit = new Set();
+  setInterval(() => {
+    if (document.hidden) { lastTick = Date.now(); return; }
+    engaged += (Date.now() - lastTick) / 1000; lastTick = Date.now();
+    marks.forEach(m => { if (engaged >= m && !markHit.has(m)) { markHit.add(m); track('time_engaged', { seconds: m }); } });
+  }, 1000);
 </script>
 </body>
 </html>
