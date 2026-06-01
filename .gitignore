@@ -1,0 +1,11 @@
+.DS_Store
+build/
+DerivedData/
+*.xcuserstate
+*.xcworkspace/xcuserdata/
+xcuserdata/
+CursorVoice.xcodeproj/
+.swiftpm/
+.env
+*.dmg
+CursorVoice.xcodeproj/

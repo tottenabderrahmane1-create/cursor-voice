@@ -1,0 +1,125 @@
+import SwiftUI
+
+struct SettingsView: View {
+    @EnvironmentObject var settings: SettingsStore
+    @EnvironmentObject var coordinator: AppCoordinator
+
+    var body: some View {
+        TabView {
+            GeneralTab().tabItem { Label("General", systemImage: "gearshape") }
+            PermissionsView().tabItem { Label("Permissions", systemImage: "lock.shield") }
+            AdvancedTab().tabItem { Label("Advanced", systemImage: "slider.horizontal.3") }
+        }
+        .frame(width: 500, height: 420)
+    }
+}
+
+private struct GeneralTab: View {
+    @EnvironmentObject var settings: SettingsStore
+    @State private var apiKeyField: String = ""
+    @State private var recording = false
+
+    var body: some View {
+        Form {
+            Section {
+                SecureField("sk-...", text: $apiKeyField, onCommit: commitKey)
+                    .textFieldStyle(.roundedBorder)
+                HStack {
+                    Text(settings.apiKey == nil ? "Not set" : "Stored in Keychain")
+                        .foregroundStyle(.secondary)
+                        .font(.caption)
+                    Spacer()
+                    Button("Save") { commitKey() }
+                        .disabled(apiKeyField.isEmpty)
+                }
+            } header: { Text("OpenAI API key") }
+
+            Section {
+                HStack {
+                    Text(settings.hotkey.displayString)
+                        .font(.system(.body, design: .monospaced))
+                        .padding(.horizontal, 10).padding(.vertical, 4)
+                        .background(RoundedRectangle(cornerRadius: 6)
+                                    .fill(Color.secondary.opacity(0.12)))
+                    Spacer()
+                    HotkeyRecorderButton(recording: $recording) { spec in
+                        settings.setHotkey(spec)
+                        recording = false
+                    }
+                }
+                Text("Press the hotkey anywhere to summon the orb at your cursor.")
+                    .font(.caption).foregroundStyle(.secondary)
+            } header: { Text("Hotkey") }
+
+            Section {
+                Toggle("Listen for wake word", isOn: Binding(
+                    get: { settings.wakeWordEnabled },
+                    set: { settings.setWakeWordEnabled($0) }))
+                TextField("Wake phrase", text: Binding(
+                    get: { settings.wakeWordPhrase },
+                    set: { settings.setWakeWordPhrase($0) }))
+                    .textFieldStyle(.roundedBorder)
+                    .disabled(!settings.wakeWordEnabled)
+                Text("Uses on-device speech recognition. Audio stays local until the phrase fires.")
+                    .font(.caption).foregroundStyle(.secondary)
+            } header: { Text("Wake word") }
+        }
+        .formStyle(.grouped)
+        .onAppear { apiKeyField = settings.apiKey ?? "" }
+    }
+
+    private func commitKey() { settings.setAPIKey(apiKeyField) }
+}
+
+private struct AdvancedTab: View {
+    @EnvironmentObject var settings: SettingsStore
+    @State private var showResetConfirm = false
+
+    private let models: [(id: String, label: String)] = [
+        ("gpt-realtime",           "gpt-realtime  ·  default GA model"),
+        ("gpt-realtime-2",         "gpt-realtime-2  ·  reasoning, slowest, most capable"),
+        ("gpt-realtime-1.5",       "gpt-realtime-1.5  ·  best voice quality"),
+        ("gpt-realtime-mini",      "gpt-realtime-mini  ·  cheap & fast"),
+        ("gpt-realtime-translate", "gpt-realtime-translate  ·  speech→speech translation")
+    ]
+    private let voices = ["marin", "cedar", "alloy", "ash", "ballad", "coral", "echo", "sage", "shimmer", "verse"]
+
+    var body: some View {
+        Form {
+            Section {
+                Picker("Model", selection: Binding(
+                    get: { settings.model },
+                    set: { settings.setModel($0) })) {
+                    ForEach(models, id: \.id) { m in
+                        Text(m.label).tag(m.id)
+                    }
+                }
+                Picker("Voice", selection: Binding(
+                    get: { settings.voice },
+                    set: { settings.setVoice($0) })) {
+                    ForEach(voices, id: \.self) { Text($0.capitalized).tag($0) }
+                }
+            } header: { Text("Realtime") }
+
+            Section {
+                Text("Capabilities: see screen, run AppleScript, run shell. The model will ask for confirmation before executing AppleScript or shell.")
+                    .font(.caption).foregroundStyle(.secondary)
+            } header: { Text("Capabilities") }
+
+            Section {
+                Button("Reset all settings…", role: .destructive) {
+                    showResetConfirm = true
+                }
+                Text("Wipes API key, hotkey, voice, model, and wake word preferences.")
+                    .font(.caption).foregroundStyle(.secondary)
+            } header: { Text("Danger zone") }
+        }
+        .formStyle(.grouped)
+        .confirmationDialog("Reset everything?", isPresented: $showResetConfirm) {
+            Button("Reset", role: .destructive) { settings.resetAll() }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Clears the API key from your Keychain and resets the hotkey, voice, model, and wake-word settings.")
+        }
+    }
+}
