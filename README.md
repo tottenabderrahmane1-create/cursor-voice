@@ -1,6 +1,6 @@
 # Cursor Voice
 
-**→ [cursorvoice landing page & demo](https://tottenabderrahmane1-create.github.io/cursor-voice/)**
+**→ [cursorvoice.app](https://cursorvoice.app)**
 
 A native macOS voice assistant that lives next to your cursor. Press a hotkey, talk to it, and it sees your screen, drives your Mac, and answers back — powered by the OpenAI Realtime API.
 
@@ -148,7 +148,7 @@ There's no Xcode project required — the codebase is plain Swift sources organi
 
 Cursor Voice is free and open source. Keeping the project online (domain, etc.) costs a little each year — if the app is useful to you, a small tip covers it and is genuinely appreciated. There's a **Sponsor** button at the top of this repo.
 
-**Questions or bug reports:** open a [GitHub issue](https://github.com/tottenabderrahmane1-create/cursor-voice/issues) or email **tottenabderrahmane1@gmail.com**.
+**Questions or bug reports:** open a [GitHub issue](https://github.com/tottenabderrahmane1-create/cursor-voice/issues) or email **support@cursorvoice.app**.
 
 Thank you 💜
 
