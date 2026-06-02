@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Terms of Service — Cursor Voice</title>
+<meta name="description" content="Terms of service for the Cursor Voice app and website." />
+<meta name="robots" content="all" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --violet:#8c4cf2; --pink:#f773c7; --sky:#66c7ff; --mint:#6bf7e5;
+    --bg:#07070b; --surface:rgba(255,255,255,.035); --surface-2:rgba(255,255,255,.06);
+    --border:rgba(255,255,255,.09); --border-2:rgba(255,255,255,.14);
+    --fg:#f4f4f8; --fg-dim:#a4a4b4; --fg-faint:#6c6c7e;
+    --maxw:760px; --ease:cubic-bezier(.22,.61,.36,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--fg);line-height:1.65;-webkit-font-smoothing:antialiased}
+  .field{position:fixed;inset:0;z-index:-2;
+    background:radial-gradient(50vw 50vw at 15% -10%,rgba(140,76,242,.16),transparent 60%),
+               radial-gradient(45vw 45vw at 95% 5%,rgba(247,115,199,.10),transparent 60%)}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  nav{position:sticky;top:0;z-index:100;backdrop-filter:blur(18px);background:rgba(7,7,11,.6);border-bottom:1px solid var(--border)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:600;font-size:16px;text-decoration:none;color:var(--fg);letter-spacing:-.01em}
+  .brand .mark{width:24px;height:24px;border-radius:50%;background:conic-gradient(from 0deg,var(--violet),var(--pink),var(--sky),var(--mint),var(--violet));box-shadow:0 0 14px rgba(140,76,242,.55)}
+  .back{color:var(--fg-dim);text-decoration:none;font-size:14px;transition:color .2s}
+  .back:hover{color:var(--fg)}
+  main{padding:64px 0 90px}
+  h1{font-size:clamp(32px,6vw,46px);font-weight:700;letter-spacing:-.03em;line-height:1.05;margin-bottom:12px}
+  .updated{font-size:13.5px;color:var(--fg-faint);margin-bottom:38px;font-family:'JetBrains Mono',monospace}
+  h2{font-size:21px;font-weight:600;letter-spacing:-.015em;margin:38px 0 12px;
+     background:linear-gradient(110deg,var(--violet),var(--sky));-webkit-background-clip:text;background-clip:text;color:transparent}
+  p,li{font-size:15.5px;color:var(--fg-dim);font-weight:350;margin-bottom:13px}
+  p b,li b{color:var(--fg);font-weight:550}
+  ul{padding-left:22px;margin-bottom:13px}
+  li{margin-bottom:8px}
+  a{color:var(--sky);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{font-family:'JetBrains Mono',monospace;font-size:13px;background:var(--surface-2);padding:2px 6px;border-radius:5px;color:var(--mint)}
+  .lead{font-size:17px;color:var(--fg-dim);margin-bottom:30px}
+  footer{border-top:1px solid var(--border);padding:34px 0;text-align:center}
+  footer p{font-size:13px;color:var(--fg-faint);margin:0}
+  :focus-visible{outline:2px solid var(--sky);outline-offset:3px;border-radius:4px}
+</style>
+</head>
+<body>
+<div class="field" aria-hidden="true"></div>
+<nav>
+  <div class="wrap">
+    <a class="brand" href="./index.html"><span class="mark"></span> Cursor Voice</a>
+    <a class="back" href="./index.html">← Back to site</a>
+  </div>
+</nav>
+
+<main>
+  <div class="wrap">
+    <h1>Terms of Service</h1>
+    <p class="updated">Last updated: 2 June 2026</p>
+
+    <p class="lead">Cursor Voice is a free, open-source, early-beta macOS app. By installing or using it, you agree to these terms. If you don't agree, don't use it.</p>
+
+    <h2>What it is</h2>
+    <p>Cursor Voice is a voice assistant that runs on your Mac. With your permission it can see your screen and control your computer (click, type, run scripts) to carry out tasks you ask of it. It connects directly to the OpenAI Realtime API using your own API key.</p>
+
+    <h2>Beta software, no warranty</h2>
+    <p>This is <b>early beta software provided "as is," without warranty of any kind</b>, express or implied. It may contain bugs, behave unexpectedly, or take actions on your computer that you didn't intend. To the maximum extent permitted by law, the author is not liable for any damages, data loss, or other harm arising from your use of the app. You use it at your own risk.</p>
+
+    <h2>You control your computer</h2>
+    <p>The app can run shell commands, AppleScript, and synthesize input. <b>You are responsible for what you ask it to do</b> and for reviewing actions before relying on them. Run it only on machines you control and trust. Destructive shell commands are blocked as a safeguard, but no safeguard is perfect.</p>
+
+    <h2>Your accounts and keys</h2>
+    <ul>
+      <li>You provide your own <b>OpenAI API key</b>; your usage is billed by OpenAI under your account, subject to OpenAI's terms. This project bills you nothing.</li>
+      <li>Signing in with Google is used only to identify you (name + email). See the <a href="privacy.html">Privacy Policy</a>.</li>
+      <li>Keep your credentials secure. You're responsible for activity under your accounts.</li>
+    </ul>
+
+    <h2>Acceptable use</h2>
+    <p>Don't use Cursor Voice to do anything illegal, to harm others, to violate the terms of services it interacts with (including OpenAI, Google, or Apple), or to access systems you aren't authorized to use.</p>
+
+    <h2>Open source &amp; license</h2>
+    <p>Cursor Voice is released under the <b>MIT License</b>. You're free to use, modify, and redistribute the source per that license. The source is available on <a href="https://github.com/tottenabderrahmane1-create/cursor-voice" target="_blank" rel="noopener">GitHub</a>.</p>
+
+    <h2>Third-party services</h2>
+    <p>The app relies on third-party services (OpenAI, Google sign-in, Apple frameworks). Your use of those is governed by their respective terms and policies. This project isn't affiliated with or endorsed by them.</p>
+
+    <h2>Changes &amp; termination</h2>
+    <p>These terms may change; the "last updated" date will reflect it, and material changes will be noted in the GitHub repository. The project may be modified or discontinued at any time. You can stop using the app and delete it at any time.</p>
+
+    <h2>Contact</h2>
+    <p>Questions? Open an issue on <a href="https://github.com/tottenabderrahmane1-create/cursor-voice/issues" target="_blank" rel="noopener">GitHub</a>.</p>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Open source under the MIT license · not affiliated with OpenAI, Google, or Apple</p>
+  </div>
+</footer>
+</body>
+</html>
