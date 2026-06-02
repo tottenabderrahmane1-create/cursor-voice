@@ -94,17 +94,17 @@
   }
   nav.scrolled { border-bottom-color: var(--border); background: rgba(7,7,11,.78); }
   nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; }
-  .brand { display: flex; align-items: center; gap: 11px; font-weight: 600; font-size: 16px; letter-spacing: -.01em; }
-  .brand .mark {
-    width: 26px; height: 26px; border-radius: 50%;
-    background: conic-gradient(from 0deg, var(--violet), var(--pink), var(--sky), var(--mint), var(--violet));
-    box-shadow: 0 0 16px rgba(140,76,242,.6);
-    animation: spin 7s linear infinite;
-    position: relative;
+  .brand {
+    display: flex; align-items: center; gap: 11px;
+    font-weight: 650; font-size: 16.5px; letter-spacing: -.02em;
+    color: var(--fg); text-decoration: none;
   }
-  .brand .mark::after {
-    content: ''; position: absolute; inset: 5px; border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.9), rgba(255,255,255,.15) 55%, transparent);
+  .brand:hover { color: #fff; }
+  .brand .mark {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: url('assets/orb-logo.png') center / cover no-repeat;
+    box-shadow: 0 0 18px rgba(140,76,242,.55), inset 0 0 0 .5px rgba(255,255,255,.25);
+    flex-shrink: 0;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
   .nav-links { display: flex; align-items: center; gap: 28px; }
