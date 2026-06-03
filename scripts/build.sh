@@ -11,7 +11,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 APP_NAME="CursorVoice"
 DISPLAY_NAME="Cursor Voice"
 BUNDLE_ID="com.cursorvoice.app"
-VERSION="${VERSION:-0.1.0}"
+VERSION="${VERSION:-$(cat "$ROOT/VERSION" 2>/dev/null || echo 0.6.0)}"
 BUILD_NUMBER="${BUILD_NUMBER:-1}"
 DEPLOY_TARGET="14.0"
 

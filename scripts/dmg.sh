@@ -4,7 +4,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 APP_NAME="CursorVoice"
-VERSION="${VERSION:-0.1.0}"
+VERSION="${VERSION:-$(cat "$ROOT/VERSION" 2>/dev/null || echo 0.6.0)}"
 
 BUILD_DIR="$ROOT/build"
 APP_BUNDLE="$BUILD_DIR/$APP_NAME.app"
