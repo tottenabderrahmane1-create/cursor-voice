@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="canonical" href="https://cursorvoice.app/siri-alternative.html" />
+<meta name="robots" content="index, follow" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+<link rel="icon" href="/favicon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/favicon-180.png">
+<title>Open-Source Siri Alternative for Mac · Voice Control That Acts — Cursor Voice</title>
+<meta name="description" content="Cursor Voice is a free, open-source Siri alternative for macOS — real voice control for your Mac. It sees your screen, clicks and types for you, and talks back, powered by the OpenAI Realtime API." />
+<meta name="keywords" content="open source siri alternative, voice control for mac, mac voice assistant, talk to your mac, siri alternative macos, voice control mac app" />
+<meta name="theme-color" content="#07070b" />
+
+<meta property="og:type" content="article" />
+<meta property="og:site_name" content="Cursor Voice" />
+<meta property="og:url" content="https://cursorvoice.app/siri-alternative.html" />
+<meta property="og:title" content="An open-source Siri alternative that actually controls your Mac" />
+<meta property="og:description" content="Free, open-source voice control for macOS. Cursor Voice sees your screen, drives your apps, and talks back — powered by the OpenAI Realtime API." />
+<meta property="og:image" content="https://cursorvoice.app/assets/hero-shot.jpg" />
+<meta property="og:image:width" content="1600" />
+<meta property="og:image:height" content="1000" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="An open-source Siri alternative that controls your Mac" />
+<meta name="twitter:description" content="Free, open-source voice control for macOS that sees your screen, drives your apps, and talks back." />
+<meta name="twitter:image" content="https://cursorvoice.app/assets/hero-shot.jpg" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is Cursor Voice a free Siri alternative?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. Cursor Voice is free and open source (MIT-licensed). You bring your own OpenAI API key and pay OpenAI directly for usage; the project itself bills you nothing." }
+    },
+    {
+      "@type": "Question",
+      "name": "Can it actually control my Mac by voice?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. It clicks native controls by name through the macOS Accessibility tree, types and scrolls, runs AppleScript and shell commands, and uses on-screen OCR as a fallback. You speak a request in plain language and it carries it out." }
+    },
+    {
+      "@type": "Question",
+      "name": "How is it different from Apple's Voice Control?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Apple Voice Control is a fixed command grammar (numbered grids, set phrases). Cursor Voice uses a large language model: it understands natural intent, reasons about what's on your screen, and replies conversationally, instead of requiring exact commands." }
+    },
+    {
+      "@type": "Question",
+      "name": "How is it different from ChatGPT's voice mode?",
+      "acceptedAnswer": { "@type": "Answer", "text": "ChatGPT can see your screen and talk, but it can't drive your Mac — it answers, it doesn't act. Cursor Voice clicks, types, and runs tasks on your computer in addition to seeing and talking." }
+    },
+    {
+      "@type": "Question",
+      "name": "Is my screen data private?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Audio and screenshots are streamed to OpenAI's Realtime API only while the orb is active, using your own API key. Nothing is sent when the orb is dismissed, there's no hosted backend, and memory is stored locally on your Mac." }
+    },
+    {
+      "@type": "Question",
+      "name": "What are the requirements?",
+      "acceptedAnswer": { "@type": "Answer", "text": "macOS 14 or later on Apple Silicon, and your own OpenAI API key. It's an early beta and is ad-hoc signed, so macOS Gatekeeper will prompt on first launch." }
+    }
+  ]
+}
+</script>
+<style>
+  :root{
+    --violet:#8c4cf2; --pink:#f773c7; --sky:#66c7ff; --mint:#6bf7e5;
+    --bg:#07070b; --surface:rgba(255,255,255,.035); --surface-2:rgba(255,255,255,.06);
+    --border:rgba(255,255,255,.09); --border-2:rgba(255,255,255,.14);
+    --fg:#f4f4f8; --fg-dim:#a4a4b4; --fg-faint:#6c6c7e;
+    --maxw:900px; --ease:cubic-bezier(.22,.61,.36,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--fg);line-height:1.65;-webkit-font-smoothing:antialiased}
+  .field{position:fixed;inset:0;z-index:-2;
+    background:radial-gradient(50vw 50vw at 15% -10%,rgba(140,76,242,.16),transparent 60%),
+               radial-gradient(45vw 45vw at 95% 5%,rgba(247,115,199,.10),transparent 60%)}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  nav{position:sticky;top:0;z-index:100;backdrop-filter:blur(18px);background:rgba(7,7,11,.6);border-bottom:1px solid var(--border)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:600;font-size:16px;text-decoration:none;color:var(--fg);letter-spacing:-.01em}
+  .brand .mark{width:24px;height:24px;border-radius:50%;background:url('assets/orb-logo.png') center / cover no-repeat;box-shadow:0 0 14px rgba(140,76,242,.55)}
+  .back{color:var(--fg-dim);text-decoration:none;font-size:14px;transition:color .2s}
+  .back:hover{color:var(--fg)}
+  main{padding:60px 0 90px}
+  h1{font-size:clamp(30px,5.5vw,46px);font-weight:780;letter-spacing:-.03em;line-height:1.06;margin-bottom:16px;max-width:18ch}
+  h1 .grad{background:linear-gradient(110deg,var(--violet),var(--pink),var(--sky));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{font-size:18px;color:var(--fg-dim);margin-bottom:30px;max-width:62ch}
+  h2{font-size:24px;font-weight:680;letter-spacing:-.02em;margin:48px 0 14px}
+  h3{font-size:17px;font-weight:620;margin:0 0 6px}
+  p,li{font-size:15.5px;color:var(--fg-dim);font-weight:350;margin-bottom:13px}
+  p b,li b{color:var(--fg);font-weight:560}
+  ul{padding-left:22px;margin-bottom:13px}
+  li{margin-bottom:8px}
+  a{color:var(--sky);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .cta-row{display:flex;gap:12px;flex-wrap:wrap;margin:8px 0 8px}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:11px;font-size:15px;font-weight:560;text-decoration:none;transition:transform .2s var(--ease),background .2s}
+  .btn:hover{transform:translateY(-1px);text-decoration:none}
+  .btn-primary{background:linear-gradient(110deg,var(--violet),var(--pink));color:#fff;box-shadow:0 8px 24px rgba(140,76,242,.35)}
+  .btn-ghost{background:var(--surface-2);color:var(--fg);border:1px solid var(--border-2)}
+  /* comparison table */
+  .table-scroll{overflow-x:auto;margin:20px 0 8px;border:1px solid var(--border);border-radius:14px;background:var(--surface)}
+  table{border-collapse:collapse;width:100%;min-width:680px;font-size:14.5px}
+  th,td{padding:13px 16px;text-align:left;border-bottom:1px solid var(--border)}
+  thead th{font-weight:600;color:var(--fg);font-size:13.5px;white-space:nowrap}
+  thead th.us{background:rgba(140,76,242,.14);border-top-left-radius:0}
+  tbody td.us{background:rgba(140,76,242,.07);color:var(--fg)}
+  tbody tr:last-child td{border-bottom:none}
+  td.feat{color:var(--fg);font-weight:500}
+  .yes{color:var(--mint);font-weight:600}
+  .partial{color:#ffce5a}
+  .no{color:var(--fg-faint)}
+  .cell-note{display:block;font-size:12px;color:var(--fg-faint);font-weight:350;margin-top:2px}
+  .fineprint{font-size:12.5px;color:var(--fg-faint);margin-top:6px}
+  .pillrow{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 6px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;flex:1 1 240px}
+  .faq dt{font-weight:600;color:var(--fg);margin:18px 0 4px;font-size:16px}
+  .faq dd{margin:0 0 4px;color:var(--fg-dim);font-size:15.5px}
+  footer{border-top:1px solid var(--border);padding:34px 0;text-align:center;margin-top:30px}
+  footer p{font-size:13px;color:var(--fg-faint);margin:0}
+  footer a{color:var(--fg-dim)}
+  :focus-visible{outline:2px solid var(--sky);outline-offset:3px;border-radius:4px}
+</style>
+</head>
+<body>
+<div class="field" aria-hidden="true"></div>
+<nav>
+  <div class="wrap">
+    <a class="brand" href="./index.html"><span class="mark"></span> Cursor Voice</a>
+    <a class="back" href="./index.html">← Back to site</a>
+  </div>
+</nav>
+
+<main>
+  <div class="wrap">
+    <h1>An <span class="grad">open-source Siri alternative</span> that actually controls your Mac</h1>
+    <p class="lead">Cursor Voice is free, open-source <b>voice control for your Mac</b>. Press a hotkey, talk in plain language, and it reads your screen, clicks and types for you, and answers back — powered by the OpenAI Realtime API. It's the missing middle between Siri, Apple's Voice Control, and ChatGPT's voice mode.</p>
+
+    <div class="cta-row">
+      <a class="btn btn-primary" href="./index.html#install">Install it free</a>
+      <a class="btn btn-ghost" href="https://github.com/cursorvoice/cursor-voice" target="_blank" rel="noopener">View source on GitHub</a>
+    </div>
+
+    <h2>Cursor Voice vs. Siri vs. Voice Control vs. ChatGPT</h2>
+    <p>Each existing option does part of the job. Siri is limited and can't see your screen. Apple's Voice Control can click things but only understands fixed commands. ChatGPT can see and talk but can't touch your Mac. Cursor Voice combines all three — and it's open source.</p>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Capability</th>
+            <th class="us">Cursor Voice</th>
+            <th>Apple Siri</th>
+            <th>Apple Voice Control</th>
+            <th>ChatGPT voice</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="feat">Understands natural intent (AI)</td>
+            <td class="us"><span class="yes">✓</span></td>
+            <td><span class="partial">Limited</span></td>
+            <td><span class="no">✗ fixed commands</span></td>
+            <td><span class="yes">✓</span></td>
+          </tr>
+          <tr>
+            <td class="feat">Sees &amp; reasons about your screen</td>
+            <td class="us"><span class="yes">✓</span></td>
+            <td><span class="no">✗</span></td>
+            <td><span class="no">✗</span></td>
+            <td><span class="yes">✓</span></td>
+          </tr>
+          <tr>
+            <td class="feat">Clicks, types &amp; drives any app</td>
+            <td class="us"><span class="yes">✓</span></td>
+            <td><span class="partial">A few intents</span></td>
+            <td><span class="yes">✓</span><span class="cell-note">command-based</span></td>
+            <td><span class="no">✗ can't act</span></td>
+          </tr>
+          <tr>
+            <td class="feat">Runs AppleScript &amp; shell</td>
+            <td class="us"><span class="yes">✓</span></td>
+            <td><span class="no">✗</span></td>
+            <td><span class="no">✗</span></td>
+            <td><span class="no">✗</span></td>
+          </tr>
+          <tr>
+            <td class="feat">Talks back conversationally</td>
+            <td class="us"><span class="yes">✓</span></td>
+            <td><span class="partial">Limited</span></td>
+            <td><span class="no">✗</span></td>
+            <td><span class="yes">✓</span></td>
+          </tr>
+          <tr>
+            <td class="feat">Open source (MIT)</td>
+            <td class="us"><span class="yes">✓</span></td>
+            <td><span class="no">✗</span></td>
+            <td><span class="no">✗</span></td>
+            <td><span class="no">✗</span></td>
+          </tr>
+          <tr>
+            <td class="feat">Price</td>
+            <td class="us">Free + your OpenAI key</td>
+            <td>Free</td>
+            <td>Free</td>
+            <td>$20/mo (Plus)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="fineprint">Comparison reflects general, publicly documented capabilities as of June 2026. Apple and OpenAI products change frequently — check their current docs. Cursor Voice is not affiliated with or endorsed by Apple or OpenAI.</p>
+
+    <h2>Why people choose it as a Siri alternative</h2>
+    <div class="pillrow">
+      <div class="card">
+        <h3>It sees, then acts</h3>
+        <p>Most assistants answer questions. Cursor Voice looks at what's on screen and <b>does the task</b> — clicks the button, fills the form, opens the file.</p>
+      </div>
+      <div class="card">
+        <h3>Reliable targeting</h3>
+        <p>It clicks native controls through the Accessibility tree (not fragile pixel-guessing), with OCR as a fallback — so voice control of your Mac actually works.</p>
+      </div>
+      <div class="card">
+        <h3>Yours to inspect</h3>
+        <p>Open source under MIT and runs on <b>your own API key</b> — no hosted backend, no lock-in, nothing billed by the project.</p>
+      </div>
+    </div>
+
+    <h2>Honest about who it's for</h2>
+    <p>Cursor Voice is an <b>early beta</b>, Apple Silicon + macOS 14 only, and ad-hoc signed (Gatekeeper will prompt on first launch). It's a great fit if you're comfortable bringing an OpenAI API key and want real, scriptable voice control of your Mac. If you want a zero-setup, fully built-in assistant, Apple's Siri and Voice Control are already on your Mac — Cursor Voice is for when those aren't enough.</p>
+
+    <h2>Frequently asked questions</h2>
+    <dl class="faq">
+      <dt>Is Cursor Voice a free Siri alternative?</dt>
+      <dd>Yes — free and open source (MIT). You bring your own OpenAI API key and pay OpenAI directly for usage; the project bills you nothing.</dd>
+      <dt>Can it actually control my Mac by voice?</dt>
+      <dd>Yes. It clicks controls by name via the Accessibility tree, types, scrolls, and runs AppleScript/shell, with on-screen OCR as a fallback.</dd>
+      <dt>How is it different from Apple's Voice Control?</dt>
+      <dd>Voice Control is a fixed command grammar. Cursor Voice uses an AI model that understands natural intent and reasons about your screen, instead of requiring exact phrases.</dd>
+      <dt>How is it different from ChatGPT's voice mode?</dt>
+      <dd>ChatGPT can see and talk but can't drive your Mac. Cursor Voice clicks, types, and runs tasks in addition to seeing and talking.</dd>
+      <dt>Is my screen data private?</dt>
+      <dd>Audio and screenshots stream to OpenAI's Realtime API only while the orb is active, on your own key. Nothing leaves your Mac when it's dismissed, and memory is stored locally.</dd>
+    </dl>
+
+    <div class="cta-row" style="margin-top:26px">
+      <a class="btn btn-primary" href="./index.html#install">Get Cursor Voice free</a>
+      <a class="btn btn-ghost" href="./index.html">See how it works</a>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Open source under the MIT license · not affiliated with or endorsed by OpenAI or Apple · <a href="./index.html">cursorvoice.app</a></p>
+  </div>
+</footer>
+</body>
+</html>
