@@ -29,8 +29,18 @@ final class AudioEngine {
 
     func start() throws {
         guard !isRunning else { return }
-        applyPreferredInputDevice()
         let input = engine.inputNode
+        // Acoustic echo cancellation + noise suppression via Apple's voice-processing
+        // I/O. Without this, on built-in speakers the mic hears the assistant's own
+        // voice and the server VAD treats it as the user talking → constant
+        // self-interruption and spurious cancels. Must be enabled before start().
+        do {
+            try input.setVoiceProcessingEnabled(true)
+            NSLog("AudioEngine: voice processing (AEC + noise suppression) enabled")
+        } catch {
+            NSLog("AudioEngine: voice processing unavailable (\(error)) — continuing without AEC")
+        }
+        applyPreferredInputDevice()
         let inputFormat = input.outputFormat(forBus: 0)
         let targetFormat = AVAudioFormat(commonFormat: .pcmFormatInt16,
                                          sampleRate: sampleRate,

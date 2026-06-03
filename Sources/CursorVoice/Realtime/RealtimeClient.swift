@@ -145,11 +145,15 @@ final class RealtimeClient: NSObject, URLSessionWebSocketDelegate {
                     // threshold MUST be a value exactly representable in IEEE-754
                     // (otherwise JSONSerialization sends 17 decimal places and the
                     // server rejects the entire session.update). 0.5 is exact.
+                    // threshold MUST be exactly representable in IEEE-754 (0.625 = 5/8
+                    // is exact) so JSONSerialization doesn't emit a 17-digit float the
+                    // server rejects. Raised from 0.5 + longer silence window to cut
+                    // false triggers from ambient noise and speaker bleed.
                     "turn_detection": [
                         "type": "server_vad",
-                        "threshold": 0.5,
-                        "prefix_padding_ms": 200,
-                        "silence_duration_ms": 400
+                        "threshold": 0.625,
+                        "prefix_padding_ms": 300,
+                        "silence_duration_ms": 600
                     ],
                     "transcription": ["model": "whisper-1"]
                 ],
@@ -333,6 +337,14 @@ final class RealtimeClient: NSObject, URLSessionWebSocketDelegate {
         case "error":
             if let err = obj["error"] as? [String: Any], let msg = err["message"] as? String {
                 NSLog("Realtime: server error \(msg)")
+                // Benign races from aggressive barge-in handling: the server may
+                // have nothing to cancel/truncate (the response already finished).
+                // These aren't real failures — don't surface them to the user.
+                let lower = msg.lowercased()
+                let benign = ["no active response", "cancellation failed", "no response found",
+                              "already has an active response", "conversation already has",
+                              "buffer is empty", "audio_end_ms", "item_id", "already has"]
+                if benign.contains(where: { lower.contains($0) }) { break }
                 lastServerError = msg
                 onStateChange?(.error(msg))
             }
