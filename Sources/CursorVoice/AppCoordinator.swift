@@ -200,6 +200,14 @@ final class AppCoordinator: ObservableObject {
            let frontApp = NSWorkspace.shared.frontmostApplication?.localizedName {
             s += "\n\nRIGHT NOW: the user's frontmost app is \(frontApp). (Ambient context — use silently, don't recite.)"
         }
+        // Accessibility modes (Settings → Accessibility).
+        let d = UserDefaults.standard
+        if d.bool(forKey: "visionAssist") {
+            s += "\n\nVISION-ASSIST MODE: The user may have low vision. Proactively describe what's on screen in clear spoken language; read out important text, labels, and changes; and narrate what you see and do. Be descriptive rather than terse — this overrides the default 'be terse' guidance."
+        }
+        if d.bool(forKey: "handsFree") {
+            s += "\n\nHANDS-FREE MODE: The user navigates entirely by voice (no mouse/keyboard). Announce each action as you take it, strongly prefer Accessibility/keyboard actions over coordinate clicks, and when the user must choose, list the options clearly so they can pick by voice."
+        }
         let memories = MemoryStore.shared.all()
         if !memories.isEmpty {
             s += "\n\nWHAT YOU REMEMBER ABOUT THIS USER (from past sessions):\n"

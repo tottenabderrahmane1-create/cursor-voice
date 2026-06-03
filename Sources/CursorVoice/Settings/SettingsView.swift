@@ -219,6 +219,20 @@ private struct AdvancedTab: View {
             } header: { Text("Behavior") }
 
             Section {
+                Toggle("Vision-assist — describe the screen aloud", isOn: Binding(
+                    get: { settings.visionAssist },
+                    set: { settings.setVisionAssist($0) }))
+                Text("For low-vision use: the assistant proactively reads and describes what's on screen and narrates what it's doing.")
+                    .font(.caption).foregroundStyle(.secondary)
+
+                Toggle("Hands-free — voice-only navigation", isOn: Binding(
+                    get: { settings.handsFree },
+                    set: { settings.setHandsFree($0) }))
+                Text("For mouse/keyboard-free use: it announces each action, prefers Accessibility/keyboard over coordinate clicks, and lists choices so you can pick by voice.")
+                    .font(.caption).foregroundStyle(.secondary)
+            } header: { Text("Accessibility") }
+
+            Section {
                 Toggle("Allow risky shell commands", isOn: Binding(
                     get: { settings.allowRiskyShellCommands },
                     set: { settings.setAllowRiskyShellCommands($0) }))
