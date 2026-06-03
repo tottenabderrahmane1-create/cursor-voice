@@ -66,7 +66,7 @@ fi
 echo "==> Copying to /Applications"
 cp -R "$MNT/${APP_NAME}.app" "$DEST"
 
-#--- strip quarantine (we're ad-hoc signed, Gatekeeper would block first run)
+#--- strip quarantine (self-signed, not notarized — Gatekeeper blocks first run)
 echo "==> Removing quarantine attribute"
 xattr -dr com.apple.quarantine "$DEST" 2>/dev/null || true
 
