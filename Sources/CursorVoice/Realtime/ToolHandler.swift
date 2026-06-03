@@ -17,7 +17,10 @@ struct ToolDispatchResult {
 
 /// Dispatches Realtime API function calls to the matching Swift capability.
 actor ToolHandler {
-    static let toolDefinitions: [[String: Any]] = [
+    /// Built-in tools plus any community plugins (loaded from disk each session).
+    static var toolDefinitions: [[String: Any]] { builtinTools + PluginManager.toolSchemas() }
+
+    static let builtinTools: [[String: Any]] = [
         [
             "type": "function",
             "name": "list_ui_elements",
@@ -1084,6 +1087,18 @@ actor ToolHandler {
             return ToolDispatchResult(outputJSON: encode(DocReader.readFile(path: path)), attachedImageBase64: nil)
 
         default:
+            // Community plugin tool?
+            if PluginManager.isPlugin(name) {
+                if UserDefaults.standard.bool(forKey: "dryRun") {
+                    return ToolDispatchResult(outputJSON: encode([
+                        "dry_run": true, "skipped_action": name,
+                        "note": "Dry-run is ON — plugin action not performed."
+                    ]), attachedImageBase64: nil)
+                }
+                NSLog("Tool: plugin \(name)")
+                let out = await PluginManager.run(name: name, args: args)
+                return ToolDispatchResult(outputJSON: encode(out), attachedImageBase64: nil)
+            }
             return ToolDispatchResult(outputJSON: encode(["error": "unknown tool \(name)"]),
                                       attachedImageBase64: nil)
         }

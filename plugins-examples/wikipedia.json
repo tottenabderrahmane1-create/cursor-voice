@@ -1,0 +1,6 @@
+{
+  "name": "search wikipedia",
+  "description": "Open a Wikipedia search for a topic in the browser.",
+  "parameters": { "type": "object", "properties": { "topic": { "type": "string" } }, "required": ["topic"] },
+  "run": { "type": "open_url", "template": "https://en.wikipedia.org/w/index.php?search={{topic}}" }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "say it",
+  "description": "Speak the given text aloud using the macOS 'say' command.",
+  "parameters": { "type": "object", "properties": { "text": { "type": "string" } }, "required": ["text"] },
+  "run": { "type": "shell", "template": "say {{text}}" }
+}

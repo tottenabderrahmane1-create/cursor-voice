@@ -1,0 +1,6 @@
+{
+  "name": "new finder window",
+  "description": "Open a new Finder window at the given folder path.",
+  "parameters": { "type": "object", "properties": { "path": { "type": "string" } }, "required": ["path"] },
+  "run": { "type": "applescript", "template": "tell application \"Finder\" to open folder (POSIX file \"{{path}}\")" }
+}
