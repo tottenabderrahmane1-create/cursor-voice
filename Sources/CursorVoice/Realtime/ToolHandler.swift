@@ -393,6 +393,76 @@ actor ToolHandler {
                 ],
                 "required": ["command"]
             ]
+        ],
+        [
+            "type": "function",
+            "name": "open_app",
+            "description": "Open (launch) an application by display name (e.g. \"Safari\", \"Visual Studio Code\") or bundle id. Launches it if it isn't already running. Prefer this over AppleScript for opening apps.",
+            "parameters": [
+                "type": "object",
+                "properties": [
+                    "name": ["type": "string", "description": "App display name or bundle id"]
+                ],
+                "required": ["name"]
+            ]
+        ],
+        [
+            "type": "function",
+            "name": "activate_app",
+            "description": "Bring an already-running application to the front by display name or bundle id.",
+            "parameters": [
+                "type": "object",
+                "properties": [
+                    "name": ["type": "string", "description": "App display name or bundle id"]
+                ],
+                "required": ["name"]
+            ]
+        ],
+        [
+            "type": "function",
+            "name": "list_apps",
+            "description": "List the currently running, visible applications (name, bundle id, whether active).",
+            "parameters": [
+                "type": "object",
+                "properties": [:] as [String: Any],
+                "required": [] as [String]
+            ]
+        ],
+        [
+            "type": "function",
+            "name": "list_windows",
+            "description": "List on-screen windows with their owning app, title, and bounds (x/y/width/height in screen points). Use before set_window_bounds.",
+            "parameters": [
+                "type": "object",
+                "properties": [:] as [String: Any],
+                "required": [] as [String]
+            ]
+        ],
+        [
+            "type": "function",
+            "name": "set_window_bounds",
+            "description": "Move and resize an app's frontmost window. Coordinates are global screen points, top-left origin.",
+            "parameters": [
+                "type": "object",
+                "properties": [
+                    "app": ["type": "string", "description": "App display name or bundle id"],
+                    "x": ["type": "number"],
+                    "y": ["type": "number"],
+                    "width": ["type": "number"],
+                    "height": ["type": "number"]
+                ],
+                "required": ["app", "x", "y", "width", "height"]
+            ]
+        ],
+        [
+            "type": "function",
+            "name": "frontmost_app",
+            "description": "Return the frontmost (active) application's name, bundle id, and pid.",
+            "parameters": [
+                "type": "object",
+                "properties": [:] as [String: Any],
+                "required": [] as [String]
+            ]
         ]
     ]
 
@@ -447,6 +517,12 @@ actor ToolHandler {
         case "mail_compose":             return "drafting an email"
         case "run_applescript":          return "running script"
         case "run_shell":                return "running command"
+        case "open_app":                 return "opening app"
+        case "activate_app":             return "switching apps"
+        case "list_apps":                return "listing apps"
+        case "list_windows":             return "listing windows"
+        case "set_window_bounds":        return "moving window"
+        case "frontmost_app":            return "checking active app"
         default:                         return tool
         }
     }
@@ -831,6 +907,40 @@ actor ToolHandler {
             let cmd = (args["command"] as? String) ?? ""
             NSLog("Tool: run_shell: \(cmd.prefix(120))")
             let out = await ShellRunner.run(cmd)
+            return ToolDispatchResult(outputJSON: encode(out), attachedImageBase64: nil)
+
+        case "open_app":
+            let name = (args["name"] as? String) ?? ""
+            NSLog("Tool: open_app \(name)")
+            let out = await MainActor.run { WindowManager.openApp(name: name) }
+            return ToolDispatchResult(outputJSON: encode(out), attachedImageBase64: nil)
+
+        case "activate_app":
+            let name = (args["name"] as? String) ?? ""
+            NSLog("Tool: activate_app \(name)")
+            let out = await MainActor.run { WindowManager.activateApp(query: name) }
+            return ToolDispatchResult(outputJSON: encode(out), attachedImageBase64: nil)
+
+        case "list_apps":
+            let apps = await MainActor.run { WindowManager.listApps() }
+            return ToolDispatchResult(outputJSON: encode(["apps": apps]), attachedImageBase64: nil)
+
+        case "list_windows":
+            let windows = WindowManager.listWindows()
+            return ToolDispatchResult(outputJSON: encode(["windows": windows]), attachedImageBase64: nil)
+
+        case "set_window_bounds":
+            let app = (args["app"] as? String) ?? ""
+            let x = number(args["x"]) ?? 0
+            let y = number(args["y"]) ?? 0
+            let w = number(args["width"]) ?? 0
+            let h = number(args["height"]) ?? 0
+            NSLog("Tool: set_window_bounds \(app) \(x),\(y) \(w)x\(h)")
+            let out = await MainActor.run { WindowManager.setWindowBounds(appQuery: app, x: x, y: y, width: w, height: h) }
+            return await confirmWithScreenshot(out)
+
+        case "frontmost_app":
+            let out = await MainActor.run { WindowManager.frontmostApp() }
             return ToolDispatchResult(outputJSON: encode(out), attachedImageBase64: nil)
 
         default:
