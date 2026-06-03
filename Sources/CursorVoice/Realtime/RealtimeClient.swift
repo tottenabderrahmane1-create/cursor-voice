@@ -169,6 +169,11 @@ final class RealtimeClient: NSObject, URLSessionWebSocketDelegate {
     }
 
     private func sendAudioChunk(_ pcm16: Data) {
+        // Half-duplex by default: while the assistant is responding, don't feed
+        // the mic to the server — otherwise speaker bleed (the model's own voice)
+        // trips the server VAD and the model interrupts/cancels itself. Users on
+        // headphones can opt into barge-in to interrupt by voice.
+        if activeResponseId != nil && !UserDefaults.standard.bool(forKey: "allowBargeIn") { return }
         let b64 = pcm16.base64EncodedString()
         send(event: ["type": "input_audio_buffer.append", "audio": b64])
     }

@@ -232,6 +232,14 @@ private struct AdvancedTab: View {
                     set: { settings.setAmbientContext($0) }))
                 Text("Tells the assistant which app is in front so you don't have to say it. App name only — your clipboard is never sent automatically (it's read only when you ask).")
                     .font(.caption).foregroundStyle(.secondary)
+
+                Toggle("Let me interrupt by speaking (barge-in)", isOn: Binding(
+                    get: { settings.allowBargeIn },
+                    set: { settings.setAllowBargeIn($0) }))
+                Text(settings.allowBargeIn
+                     ? "⚠️ Barge-in is ON — you can cut the assistant off by speaking. On built-in speakers the mic may hear the assistant and interrupt it mid-reply. Use headphones for best results."
+                     : "Off: the assistant finishes speaking before listening again, so it won't interrupt itself on speakers. Turn on (with headphones) to cut it off by voice.")
+                    .font(.caption).foregroundStyle(settings.allowBargeIn ? .orange : .secondary)
             } header: { Text("Behavior") }
 
             Section {
