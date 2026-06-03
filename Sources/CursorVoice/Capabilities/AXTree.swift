@@ -11,6 +11,7 @@ enum AXTree {
         let role: String
         let title: String
         let value: String
+        let searchBlob: String   // title + value + help + description + AXIdentifier, lowercased
         let frame: CGRect        // screen points, top-left origin
         let identifier: String   // synthetic id stable for a single tree walk
         let element: AXUIElement // live handle for AXPress / other actions
@@ -83,6 +84,7 @@ enum AXTree {
             if t.hasPrefix(q) { return 800 }
             if t.contains(q) { return 600 - abs(t.count - q.count) }
             if v.contains(q) { return 400 }
+            if e.searchBlob.contains(q) { return 350 }   // help / description / AXIdentifier
             return 0
         }
         let ranked = pool.map { (e: $0, s: score($0)) }.filter { $0.s > 0 }
@@ -111,14 +113,23 @@ enum AXTree {
                          : !desc.isEmpty ? desc
                          : value
 
+        // AXIdentifier is a programmatic id many apps set even when there's no
+        // visible title — a strong extra signal for matching.
+        let axId = (copyAttribute(element, "AXIdentifier") as? String) ?? ""
+
         if interestingRoles.contains(role), !displayTitle.isEmpty {
             let frame = frameOf(element)
             if frame.width > 0 && frame.height > 0 {
                 counter += 1
+                let blob = [displayTitle, value, help, desc, axId]
+                    .filter { !$0.isEmpty }
+                    .joined(separator: " ")
+                    .lowercased()
                 results.append(Element(
                     role: role,
                     title: displayTitle,
                     value: value,
+                    searchBlob: blob,
                     frame: frame,
                     identifier: "el\(counter)",
                     element: element
