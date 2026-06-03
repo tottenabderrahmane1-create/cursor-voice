@@ -6,6 +6,10 @@ struct SettingsView: View {
     @EnvironmentObject var coordinator: AppCoordinator
     @ObservedObject private var updates = UpdateChecker.shared
 
+    private var appVersion: String {
+        (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? ""
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             UpdateBanner(checker: updates)
@@ -20,6 +24,12 @@ struct SettingsView: View {
             }
         }
         .frame(width: 500, height: 460)
+        .overlay(alignment: .topTrailing) {
+            Text("v\(appVersion)")
+                .font(.system(size: 11, weight: .medium, design: .rounded))
+                .foregroundStyle(.secondary)
+                .padding(.top, 9).padding(.trailing, 14)
+        }
         .onAppear {
             // Re-check for updates whenever Settings opens — the menu-bar app's
             // periodic check (launch + every 6h) can miss a release published
