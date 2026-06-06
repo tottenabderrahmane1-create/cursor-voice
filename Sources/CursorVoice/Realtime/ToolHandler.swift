@@ -399,6 +399,43 @@ actor ToolHandler {
         ],
         [
             "type": "function",
+            "name": "run_codex",
+            "description": "Delegate a CODING task to the OpenAI Codex CLI if the user has it installed and signed in (it uses their ChatGPT/Codex subscription, NOT the API key). Best for writing/refactoring/explaining code or running a repo task. Pass the whole task as one instruction. Best for quick tasks (long ones may time out).",
+            "parameters": [
+                "type": "object",
+                "properties": [
+                    "task": ["type": "string", "description": "The full coding task, e.g. 'refactor utils.py to use pathlib and add type hints'"]
+                ],
+                "required": ["task"]
+            ]
+        ],
+        [
+            "type": "function",
+            "name": "wait_for_text",
+            "description": "Poll the screen with OCR until the given text appears, then return. Use before acting on something that shows up after a delay (a dialog, a button, a loaded page) instead of guessing how long to wait.",
+            "parameters": [
+                "type": "object",
+                "properties": [
+                    "text": ["type": "string", "description": "Visible text to wait for (case-insensitive substring)."],
+                    "timeout_seconds": ["type": "integer", "default": 15, "description": "Max seconds to wait (capped at 60)."]
+                ],
+                "required": ["text"]
+            ]
+        ],
+        [
+            "type": "function",
+            "name": "wait",
+            "description": "Pause for a number of seconds — e.g. let an animation or load finish before the next step.",
+            "parameters": [
+                "type": "object",
+                "properties": [
+                    "seconds": ["type": "number", "description": "Seconds to wait (capped at 30)."]
+                ],
+                "required": ["seconds"]
+            ]
+        ],
+        [
+            "type": "function",
             "name": "open_app",
             "description": "Open (launch) an application by display name (e.g. \"Safari\", \"Visual Studio Code\") or bundle id. Launches it if it isn't already running. Prefer this over AppleScript for opening apps.",
             "parameters": [
@@ -588,6 +625,9 @@ actor ToolHandler {
         case "mail_compose":             return "drafting an email"
         case "run_applescript":          return "running script"
         case "run_shell":                return "running command"
+        case "run_codex":                return "asking Codex"
+        case "wait_for_text":            return "waiting for the screen"
+        case "wait":                     return "waiting"
         case "open_app":                 return "opening app"
         case "activate_app":             return "switching apps"
         case "list_apps":                return "listing apps"
@@ -615,7 +655,7 @@ actor ToolHandler {
         "open_app", "activate_app", "set_window_bounds",
         "calendar_add_event", "reminders_add", "notes_create", "mail_compose",
         "browser_click_text", "browser_run_js",
-        "set_clipboard", "move_file"
+        "set_clipboard", "move_file", "run_codex"
     ]
 
     func dispatch(name: String, argsJSON: String) async -> ToolDispatchResult {
@@ -1016,6 +1056,44 @@ actor ToolHandler {
             NSLog("Tool: run_shell: \(cmd.prefix(120))")
             let out = await ShellRunner.run(cmd)
             return ToolDispatchResult(outputJSON: encode(out), attachedImageBase64: nil)
+
+        case "run_codex":
+            let task = (args["task"] as? String) ?? ""
+            NSLog("Tool: run_codex: \(task.prefix(120))")
+            let quoted = "'" + task.replacingOccurrences(of: "'", with: "'\\''") + "'"
+            // Handle the missing-CLI case inline so we return a helpful message.
+            let cmd = "command -v codex >/dev/null 2>&1 || { echo 'CODEX_CLI_NOT_FOUND — install the Codex CLI and run: codex login'; exit 0; }; codex exec \(quoted)"
+            let out = await ShellRunner.run(cmd)
+            return ToolDispatchResult(outputJSON: encode(out), attachedImageBase64: nil)
+
+        case "wait":
+            let secs = min(30, max(0, number(args["seconds"]) ?? 0))
+            NSLog("Tool: wait \(secs)s")
+            try? await Task.sleep(nanoseconds: UInt64(secs * 1_000_000_000))
+            return ToolDispatchResult(outputJSON: encode(["ok": true, "waited_seconds": secs]),
+                                      attachedImageBase64: nil)
+
+        case "wait_for_text":
+            let target = ((args["text"] as? String) ?? "").lowercased()
+            let timeout = min(60, max(1, (args["timeout_seconds"] as? Int) ?? 15))
+            NSLog("Tool: wait_for_text '\(target)' timeout=\(timeout)s")
+            let deadline = Date().addingTimeInterval(Double(timeout))
+            var found = false
+            var lastShot = await ScreenCapture.shared.capture()
+            while Date() < deadline {
+                lastShot = await ScreenCapture.shared.capture()
+                if let cg = lastShot.cgImage {
+                    let matches = await OCR.recognize(in: cg)
+                    if matches.contains(where: { $0.text.lowercased().contains(target) }) {
+                        found = true; break
+                    }
+                }
+                try? await Task.sleep(nanoseconds: 800_000_000)
+            }
+            return ToolDispatchResult(
+                outputJSON: encode(["found": found, "text": (args["text"] as? String) ?? "",
+                                    "timeout_seconds": timeout]),
+                attachedImageBase64: lastShot.imageBase64)
 
         case "open_app":
             let name = (args["name"] as? String) ?? ""
